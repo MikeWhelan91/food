@@ -1,5 +1,14 @@
 import Foundation
 
+struct ScanImagePayload: Hashable, Codable, Sendable {
+    var base64: String
+    var mimeType: String
+
+    var dataURL: String {
+        "data:\(mimeType);base64,\(base64)"
+    }
+}
+
 struct ProductLookupResult: Identifiable, Hashable {
     let id = UUID()
     var barcode: String

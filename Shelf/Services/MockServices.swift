@@ -14,8 +14,9 @@ struct MockProductLookupService: ProductLookupServicing {
 }
 
 struct MockSmartScanService: SmartScanServicing {
-    func detectItems(imageCount: Int) async throws -> [DetectedInventoryItem] {
+    func detectItems(images: [ScanImagePayload]) async throws -> [DetectedInventoryItem] {
         try await Task.sleep(nanoseconds: 1_400_000_000)
+        let imageCount = max(1, images.count)
         return [
             DetectedInventoryItem(name: "Milk", brand: "Avonmore", quantity: 1, category: .fridge, expiryDate: .daysFromNow(3), confidence: 0.92, imageSystemName: "carton"),
             DetectedInventoryItem(name: "Eggs", brand: "Farmhouse", quantity: 6, category: .fridge, expiryDate: .daysFromNow(6), confidence: 0.88, imageSystemName: "oval.grid.3x3"),
@@ -28,7 +29,7 @@ struct MockSmartScanService: SmartScanServicing {
 }
 
 struct MockReceiptOCRService: ReceiptOCRServicing {
-    func parseReceipt() async throws -> [ReceiptLineItem] {
+    func parseReceipt(image: ScanImagePayload?) async throws -> [ReceiptLineItem] {
         try await Task.sleep(nanoseconds: 1_100_000_000)
         return [
             ReceiptLineItem(name: "Milk", quantity: 1, category: .fridge, confidence: 0.96),
@@ -41,7 +42,7 @@ struct MockReceiptOCRService: ReceiptOCRServicing {
 }
 
 struct MockExpiryOCRService: ExpiryOCRServicing {
-    func detectExpiry() async throws -> ExpiryDetection {
+    func detectExpiry(image: ScanImagePayload?) async throws -> ExpiryDetection {
         try await Task.sleep(nanoseconds: 600_000_000)
         return ExpiryDetection(date: .daysFromNow(4), label: "Best Before", rawText: "BEST BEFORE 21 MAY", confidence: 0.82)
     }

@@ -8,16 +8,16 @@ struct ShelfBackendSmartScanService: SmartScanServicing {
         self.client = client
     }
 
-    func detectItems(imageCount: Int) async throws -> [DetectedInventoryItem] {
+    func detectItems(images: [ScanImagePayload]) async throws -> [DetectedInventoryItem] {
         do {
             let response = try await client.post(
                 "api/ai/smart-scan",
-                body: SmartScanRequest(imageCount: imageCount),
+                body: SmartScanRequest(imageCount: max(1, images.count), images: images),
                 responseType: SmartScanResponse.self
             )
             return response.items.map(\.detectedItem)
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.detectItems(imageCount: imageCount)
+            return try await fallback.detectItems(images: images)
         }
     }
 }
@@ -30,16 +30,16 @@ struct ShelfBackendReceiptOCRService: ReceiptOCRServicing {
         self.client = client
     }
 
-    func parseReceipt() async throws -> [ReceiptLineItem] {
+    func parseReceipt(image: ScanImagePayload?) async throws -> [ReceiptLineItem] {
         do {
             let response = try await client.post(
                 "api/ai/receipt",
-                body: EmptyAIRequest(),
+                body: ImageAIRequest(image: image),
                 responseType: ReceiptResponse.self
             )
             return response.items.map(\.lineItem)
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.parseReceipt()
+            return try await fallback.parseReceipt(image: image)
         }
     }
 }
@@ -52,24 +52,27 @@ struct ShelfBackendExpiryOCRService: ExpiryOCRServicing {
         self.client = client
     }
 
-    func detectExpiry() async throws -> ExpiryDetection {
+    func detectExpiry(image: ScanImagePayload?) async throws -> ExpiryDetection {
         do {
             let response = try await client.post(
                 "api/ai/expiry",
-                body: EmptyAIRequest(),
+                body: ImageAIRequest(image: image),
                 responseType: ExpiryResponse.self
             )
             return response.expiryDetection
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.detectExpiry()
+            return try await fallback.detectExpiry(image: image)
         }
     }
 }
 
-private struct EmptyAIRequest: Encodable {}
+private struct ImageAIRequest: Encodable {
+    let image: ScanImagePayload?
+}
 
 private struct SmartScanRequest: Encodable {
     let imageCount: Int
+    let images: [ScanImagePayload]
 }
 
 private struct SmartScanResponse: Decodable {

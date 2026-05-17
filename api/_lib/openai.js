@@ -38,7 +38,7 @@ export function requirePost(request, response) {
   return true;
 }
 
-export async function generateShelfJSON(prompt, maxOutputTokens = 900) {
+export async function generateShelfJSON(prompt, maxOutputTokens = 900, images = []) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     const error = new Error("OPENAI_API_KEY is not configured.");
@@ -46,6 +46,18 @@ export async function generateShelfJSON(prompt, maxOutputTokens = 900) {
     error.code = "missing_openai_key";
     throw error;
   }
+
+  const userContent = [
+    {
+      type: "input_text",
+      text: prompt
+    },
+    ...normalizeImages(images).map((image) => ({
+      type: "input_image",
+      image_url: `data:${image.mimeType};base64,${image.base64}`,
+      detail: "low"
+    }))
+  ];
 
   const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
@@ -67,12 +79,7 @@ export async function generateShelfJSON(prompt, maxOutputTokens = 900) {
         },
         {
           role: "user",
-          content: [
-            {
-              type: "input_text",
-              text: prompt
-            }
-          ]
+          content: userContent
         }
       ],
       temperature: 0.1,
@@ -99,6 +106,20 @@ export async function generateShelfJSON(prompt, maxOutputTokens = 900) {
   }
 
   return parseJSONText(text);
+}
+
+export function normalizeImages(images) {
+  if (!Array.isArray(images)) {
+    return [];
+  }
+
+  return images
+    .slice(0, 3)
+    .map((image) => ({
+      base64: typeof image?.base64 === "string" ? image.base64 : "",
+      mimeType: typeof image?.mimeType === "string" ? image.mimeType : "image/jpeg"
+    }))
+    .filter((image) => image.base64.length > 0 && image.base64.length < 8_000_000);
 }
 
 export function handleError(response, error) {

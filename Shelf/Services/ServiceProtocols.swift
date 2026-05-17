@@ -7,15 +7,15 @@ protocol ProductLookupServicing: Sendable {
 }
 
 protocol SmartScanServicing: Sendable {
-    func detectItems(imageCount: Int) async throws -> [DetectedInventoryItem]
+    func detectItems(images: [ScanImagePayload]) async throws -> [DetectedInventoryItem]
 }
 
 protocol ReceiptOCRServicing: Sendable {
-    func parseReceipt() async throws -> [ReceiptLineItem]
+    func parseReceipt(image: ScanImagePayload?) async throws -> [ReceiptLineItem]
 }
 
 protocol ExpiryOCRServicing: Sendable {
-    func detectExpiry() async throws -> ExpiryDetection
+    func detectExpiry(image: ScanImagePayload?) async throws -> ExpiryDetection
 }
 
 protocol ProductSuggestionServicing: Sendable {

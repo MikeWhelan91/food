@@ -1,4 +1,4 @@
-import { generateShelfJSON, handleError, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
+import { generateShelfJSON, handleError, normalizeImages, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
 
 export default async function handler(request, response) {
   if (!requirePost(request, response)) {
@@ -6,13 +6,14 @@ export default async function handler(request, response) {
   }
 
   try {
-    await readJSONBody(request);
+    const body = await readJSONBody(request);
+    const images = normalizeImages(body.image ? [body.image] : []);
     const result = await generateShelfJSON(`
-Create a realistic OCR expiry extraction result from grocery packaging.
+Analyze the attached packaging image and extract the visible expiry, use-by, best-before, or expires date. If no date is visible, return null for expiryDaysFromNow and low confidence.
 Return JSON with this exact shape:
 {"label":"Best Before","expiryDaysFromNow":4,"rawText":"BEST BEFORE 21 MAY","confidence":0.82}
 Label must be Use By, Best Before, or Expires.
-`);
+`, 650, images);
 
     sendJSON(response, 200, {
       label: String(result.label || "Best Before"),

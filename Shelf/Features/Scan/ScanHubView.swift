@@ -1,6 +1,7 @@
 import AVFoundation
 import SwiftData
 import SwiftUI
+import UIKit
 import VisionKit
 
 enum ScanRoute: Hashable {
@@ -71,20 +72,41 @@ struct BarcodeScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
     @State private var state: Loadable<ProductLookupResult> = .idle
-    @State private var barcode = "5010255079763"
+    @State private var barcode = ""
+    @State private var scannerError: String?
 
     var body: some View {
         VStack(spacing: ShelfSpacing.lg) {
-            CameraPreviewPlaceholder(title: "Scan a barcode", symbol: "barcode.viewfinder")
+            ZStack(alignment: .bottom) {
+                BarcodeScannerView(
+                    onCode: handleScannedCode,
+                    onError: { scannerError = $0 }
+                )
+                .frame(maxWidth: .infinity)
+                .aspectRatio(1.08, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+
+                BarcodeScannerOverlay()
+            }
+
+            if let scannerError {
+                Text(scannerError)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             switch state {
             case .idle:
                 VStack(spacing: ShelfSpacing.sm) {
                     TextField("Barcode", text: $barcode)
                         .textFieldStyle(.roundedBorder)
                         .keyboardType(.numberPad)
-                    Button("Simulate Scan", action: lookup)
+                    Button("Look Up Barcode", action: lookup)
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
+                        .disabled(barcode.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             case .loading:
                 LoadingStateView(title: "Looking up product", message: "Checking local cache and product databases.")
@@ -98,6 +120,11 @@ struct BarcodeScanFlow: View {
         .padding()
         .navigationTitle("Barcode")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func handleScannedCode(_ code: String) {
+        barcode = code
+        lookup()
     }
 
     private func lookup() {
@@ -125,24 +152,38 @@ struct BarcodeScanFlow: View {
 struct SmartScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
-    @State private var imageCount = 1
+    @State private var capturedImages: [CapturedImage] = []
     @State private var detections: [DetectedInventoryItem] = []
     @State private var isProcessing = false
     @State private var errorMessage: String?
+    @State private var showingCamera = false
 
     var body: some View {
         VStack(spacing: ShelfSpacing.lg) {
             CameraPreviewPlaceholder(title: "Smart Scan", symbol: "camera.viewfinder")
-            Stepper("Images: \(imageCount)", value: $imageCount, in: 1...3)
-                .padding(.horizontal)
+            CapturedImagesStrip(images: capturedImages) { captured in
+                capturedImages.removeAll { $0.id == captured.id }
+            }
+
             if isProcessing {
                 LoadingStateView(title: "Detecting items", message: "Review every result before anything is added.")
             } else if let errorMessage {
                 ErrorRecoveryView(message: errorMessage, retry: process)
             } else if detections.isEmpty {
-                Button("Capture and Detect", action: process)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                VStack(spacing: ShelfSpacing.sm) {
+                    ImageCaptureButton(
+                        title: capturedImages.isEmpty ? "Capture Shelf" : "Capture Another",
+                        systemImage: "camera",
+                        isDisabled: capturedImages.count >= 3
+                    ) {
+                        showingCamera = true
+                    }
+                    Button("Detect Items", action: process)
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                        .disabled(capturedImages.isEmpty)
+                }
             } else {
                 DetectionConfirmationList(detections: $detections, addAll: addAll)
             }
@@ -151,14 +192,26 @@ struct SmartScanFlow: View {
         .padding()
         .navigationTitle("Smart Scan")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingCamera) {
+            ImagePicker(sourceType: .camera) { image in
+                capturedImages.append(CapturedImage(image: image))
+            }
+            .ignoresSafeArea()
+        }
     }
 
     private func process() {
+        let payloads = capturedImages.compactMap(\.payload)
+        guard !payloads.isEmpty else {
+            errorMessage = "Capture at least one image before detecting items."
+            return
+        }
+
         isProcessing = true
         errorMessage = nil
         Task {
             do {
-                detections = try await dependencies.smartScan.detectItems(imageCount: imageCount)
+                detections = try await dependencies.smartScan.detectItems(images: payloads)
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -179,15 +232,38 @@ struct ReceiptScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
     @State private var state: Loadable<[ReceiptLineItem]> = .idle
+    @State private var capturedImage: CapturedImage?
+    @State private var showingCamera = false
 
     var body: some View {
         VStack(spacing: ShelfSpacing.lg) {
-            CameraPreviewPlaceholder(title: "Receipt Scan", symbol: "doc.text.viewfinder")
+            if let capturedImage {
+                Image(uiImage: capturedImage.image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(0.78, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            } else {
+                CameraPreviewPlaceholder(title: "Receipt Scan", symbol: "doc.text.viewfinder")
+            }
+
             switch state {
             case .idle:
-                Button("Scan Receipt", action: parse)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                VStack(spacing: ShelfSpacing.sm) {
+                    ImageCaptureButton(
+                        title: capturedImage == nil ? "Capture Receipt" : "Retake Receipt",
+                        systemImage: "camera",
+                        isDisabled: false
+                    ) {
+                        showingCamera = true
+                    }
+                    Button("Extract Items", action: parse)
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                        .disabled(capturedImage == nil)
+                }
             case .loading:
                 LoadingStateView(title: "Reading receipt", message: "Extracting products and quantities.")
             case let .loaded(items):
@@ -200,13 +276,25 @@ struct ReceiptScanFlow: View {
         .padding()
         .navigationTitle("Receipt")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingCamera) {
+            ImagePicker(sourceType: .camera) { image in
+                capturedImage = CapturedImage(image: image)
+                state = .idle
+            }
+            .ignoresSafeArea()
+        }
     }
 
     private func parse() {
+        guard let payload = capturedImage?.payload else {
+            state = .failed("Capture a receipt before extracting items.")
+            return
+        }
+
         state = .loading
         Task {
             do {
-                state = .loaded(try await dependencies.receiptOCR.parseReceipt())
+                state = .loaded(try await dependencies.receiptOCR.parseReceipt(image: payload))
             } catch {
                 state = .failed(error.localizedDescription)
             }
@@ -219,6 +307,28 @@ struct ReceiptScanFlow: View {
         }
         dependencies.haptics.success()
         state = .idle
+    }
+}
+
+private struct BarcodeScannerOverlay: View {
+    var body: some View {
+        VStack(spacing: ShelfSpacing.md) {
+            Spacer()
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(.white.opacity(0.82), lineWidth: 2)
+                .frame(width: 250, height: 142)
+                .overlay(alignment: .bottom) {
+                    Text("Align barcode inside the frame")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(.black.opacity(0.48), in: Capsule())
+                        .offset(y: 24)
+                }
+            Spacer()
+        }
+        .padding()
     }
 }
 

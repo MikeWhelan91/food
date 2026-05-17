@@ -1,4 +1,4 @@
-import { generateShelfJSON, handleError, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
+import { generateShelfJSON, handleError, normalizeImages, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
 
 export default async function handler(request, response) {
   if (!requirePost(request, response)) {
@@ -6,13 +6,14 @@ export default async function handler(request, response) {
   }
 
   try {
-    await readJSONBody(request);
+    const body = await readJSONBody(request);
+    const images = normalizeImages(body.image ? [body.image] : []);
     const result = await generateShelfJSON(`
-Create a realistic grocery receipt extraction result.
+Analyze the attached grocery receipt image. Extract purchased household products and quantities. Ignore totals, store address, payment details, taxes, and loyalty lines.
 Return JSON with this exact shape:
 {"items":[{"name":"Milk","quantity":1,"category":"Fridge","confidence":0.94}]}
-Include 4 to 7 common grocery products. Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet.
-`);
+Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet.
+`, 1000, images);
 
     sendJSON(response, 200, normalizeReceiptPayload(result));
   } catch (error) {

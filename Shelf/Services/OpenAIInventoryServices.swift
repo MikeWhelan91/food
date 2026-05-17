@@ -8,10 +8,10 @@ struct OpenAISmartScanService: SmartScanServicing {
         self.client = client
     }
 
-    func detectItems(imageCount: Int) async throws -> [DetectedInventoryItem] {
+    func detectItems(images: [ScanImagePayload]) async throws -> [DetectedInventoryItem] {
         do {
             let json = try await client.generateJSON(prompt: """
-            Create a realistic fridge or pantry smart scan result for \(imageCount) captured image(s).
+            Create a realistic fridge or pantry smart scan result for \(max(1, images.count)) captured image(s).
             Return JSON with this exact shape:
             {"items":[{"name":"Milk","brand":"Avonmore","quantity":1,"category":"Fridge","expiryDaysFromNow":3,"confidence":0.91,"imageSystemName":"carton"}]}
             Use 3 to 6 common household grocery items. Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet.
@@ -19,7 +19,7 @@ struct OpenAISmartScanService: SmartScanServicing {
             let decoded = try JSONDecoder().decode(OpenAISmartScanResponse.self, from: Data(json.utf8))
             return decoded.items.map(\.detectedItem)
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.detectItems(imageCount: imageCount)
+            return try await fallback.detectItems(images: images)
         } catch {
             throw error
         }
@@ -34,7 +34,7 @@ struct OpenAIReceiptOCRService: ReceiptOCRServicing {
         self.client = client
     }
 
-    func parseReceipt() async throws -> [ReceiptLineItem] {
+    func parseReceipt(image: ScanImagePayload?) async throws -> [ReceiptLineItem] {
         do {
             let json = try await client.generateJSON(prompt: """
             Create a realistic grocery receipt extraction result.
@@ -45,7 +45,7 @@ struct OpenAIReceiptOCRService: ReceiptOCRServicing {
             let decoded = try JSONDecoder().decode(OpenAIReceiptResponse.self, from: Data(json.utf8))
             return decoded.items.map(\.lineItem)
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.parseReceipt()
+            return try await fallback.parseReceipt(image: image)
         } catch {
             throw error
         }
@@ -60,7 +60,7 @@ struct OpenAIExpiryOCRService: ExpiryOCRServicing {
         self.client = client
     }
 
-    func detectExpiry() async throws -> ExpiryDetection {
+    func detectExpiry(image: ScanImagePayload?) async throws -> ExpiryDetection {
         do {
             let json = try await client.generateJSON(prompt: """
             Create a realistic OCR expiry extraction result from grocery packaging.
@@ -71,7 +71,7 @@ struct OpenAIExpiryOCRService: ExpiryOCRServicing {
             let decoded = try JSONDecoder().decode(OpenAIExpiryResponse.self, from: Data(json.utf8))
             return decoded.expiryDetection
         } catch ShelfServiceError.missingConfiguration {
-            return try await fallback.detectExpiry()
+            return try await fallback.detectExpiry(image: image)
         } catch {
             throw error
         }

@@ -1,4 +1,4 @@
-import { generateShelfJSON, handleError, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
+import { generateShelfJSON, handleError, normalizeImages, readJSONBody, requirePost, sendJSON } from "../_lib/openai.js";
 
 export default async function handler(request, response) {
   if (!requirePost(request, response)) {
@@ -8,12 +8,13 @@ export default async function handler(request, response) {
   try {
     const body = await readJSONBody(request);
     const imageCount = clampInteger(body.imageCount, 1, 3, 1);
+    const images = normalizeImages(body.images);
     const result = await generateShelfJSON(`
-Create a realistic fridge or pantry smart scan result for ${imageCount} captured image(s).
+Analyze the attached fridge, freezer, pantry, or household inventory photo(s). If images are unclear, infer cautiously from visible packaging and common household context.
 Return JSON with this exact shape:
 {"items":[{"name":"Milk","brand":"Avonmore","quantity":1,"category":"Fridge","expiryDaysFromNow":3,"confidence":0.91,"imageSystemName":"carton"}]}
-Use 3 to 6 common household grocery items. Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet.
-`);
+Return 1 to 8 visible products. Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet. Use null for expiryDaysFromNow if no expiry is visible. Number of captured images: ${imageCount}.
+`, 1000, images);
 
     sendJSON(response, 200, normalizeItemsPayload(result));
   } catch (error) {
