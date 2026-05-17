@@ -119,7 +119,9 @@ struct BarcodeScanFlow: View {
             case .loading:
                 LoadingStateView(title: "Looking up product", message: "Checking local cache and product databases.")
             case let .loaded(result):
-                ProductConfirmationCard(result: result, add: { add(result) })
+                ProductConfirmationCard(result: result) { expiryDate in
+                    add(result, expiryDate: expiryDate)
+                }
             case let .failed(message):
                 ErrorRecoveryView(message: message, retry: lookup)
             }
@@ -150,8 +152,11 @@ struct BarcodeScanFlow: View {
         }
     }
 
-    private func add(_ result: ProductLookupResult) {
-        let item = InventoryItem(productName: result.name, brand: result.brand, category: result.category, locationName: result.category.rawValue, imageSystemName: result.imageSystemName, imageURLString: result.imageURL?.absoluteString, expiry: ExpiryInfo(date: .daysFromNow(7), label: "Best Before", confidence: result.confidence, source: result.source), events: [InventoryEvent(kind: .added, message: "Added from barcode")])
+    private func add(_ result: ProductLookupResult, expiryDate: Date?) {
+        let expiry = expiryDate.map {
+            ExpiryInfo(date: $0, label: "Best Before", confidence: result.confidence, source: result.source)
+        }
+        let item = InventoryItem(productName: result.name, brand: result.brand, category: result.category, locationName: result.category.rawValue, imageSystemName: result.imageSystemName, imageURLString: result.imageURL?.absoluteString, expiry: expiry, events: [InventoryEvent(kind: .added, message: "Added from barcode")])
         modelContext.insert(item)
         dependencies.haptics.success()
         path.removeAll()
@@ -233,7 +238,8 @@ struct SmartScanFlow: View {
 
     private func addAll() {
         detections.forEach { detection in
-            modelContext.insert(InventoryItem(productName: detection.name, brand: detection.brand, quantity: detection.quantity, category: detection.category, locationName: detection.category.rawValue, imageSystemName: detection.imageSystemName, expiry: ExpiryInfo(date: detection.expiryDate, label: "Best Before", confidence: detection.confidence, source: "Smart Scan"), events: [InventoryEvent(kind: .added, message: "Added from smart scan")]))
+            let expiry = detection.tracksExpiry ? ExpiryInfo(date: detection.expiryDate ?? .daysFromNow(7), label: "Best Before", confidence: detection.confidence, source: "Smart Scan") : nil
+            modelContext.insert(InventoryItem(productName: detection.name, brand: detection.brand, quantity: detection.quantity, category: detection.category, locationName: detection.category.rawValue, imageSystemName: detection.imageSystemName, expiry: expiry, events: [InventoryEvent(kind: .added, message: "Added from smart scan")]))
         }
         detections.removeAll()
         dependencies.haptics.success()
@@ -319,7 +325,8 @@ struct ReceiptScanFlow: View {
 
     private func addAll(_ items: [ReceiptLineItem]) {
         items.forEach { line in
-            modelContext.insert(InventoryItem(productName: line.name, quantity: line.quantity, category: line.category, locationName: line.category.rawValue, imageSystemName: line.category.symbol, expiry: ExpiryInfo(date: .daysFromNow(7), label: "Best Before", confidence: line.confidence, source: "Receipt"), events: [InventoryEvent(kind: .added, message: "Added from receipt")]))
+            let expiry = line.tracksExpiry ? ExpiryInfo(date: line.expiryDate ?? .daysFromNow(7), label: "Best Before", confidence: line.confidence, source: "Receipt") : nil
+            modelContext.insert(InventoryItem(productName: line.name, quantity: line.quantity, category: line.category, locationName: line.category.rawValue, imageSystemName: line.category.symbol, expiry: expiry, events: [InventoryEvent(kind: .added, message: "Added from receipt")]))
         }
         dependencies.haptics.success()
         state = .idle
@@ -383,7 +390,9 @@ private struct CameraPreviewPlaceholder: View {
 
 private struct ProductConfirmationCard: View {
     let result: ProductLookupResult
-    let add: () -> Void
+    let add: (Date?) -> Void
+    @State private var tracksExpiry = true
+    @State private var expiryDate = Date.daysFromNow(7)
 
     var body: some View {
         VStack(spacing: ShelfSpacing.md) {
@@ -399,7 +408,13 @@ private struct ProductConfirmationCard: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
-            Button("Add to Inventory", action: add)
+            ExpiryConfirmationEditor(
+                tracksExpiry: $tracksExpiry,
+                expiryDate: $expiryDate
+            )
+            Button("Add to Inventory") {
+                add(tracksExpiry ? expiryDate : nil)
+            }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .frame(maxWidth: .infinity)
@@ -417,14 +432,28 @@ private struct DetectionConfirmationList: View {
             Text("Detected Items").font(.headline)
             VStack(spacing: 0) {
                 ForEach($detections) { $item in
-                    HStack(spacing: ShelfSpacing.sm) {
-                        ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 36)
-                        TextField("Name", text: $item.name)
-                            .font(.subheadline.weight(.medium))
-                        Stepper("\(item.quantity.formatted())", value: $item.quantity, in: 0...20, step: 1)
-                            .labelsHidden()
+                    VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                        HStack(spacing: ShelfSpacing.sm) {
+                            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 36)
+                            TextField("Name", text: $item.name)
+                                .font(.subheadline.weight(.medium))
+                            Stepper("\(item.quantity.formatted())", value: $item.quantity, in: 0...20, step: 1)
+                                .labelsHidden()
+                        }
+                        Picker("Category", selection: $item.category) {
+                            ForEach(CategoryKind.allCases) { category in
+                                Text(category.rawValue).tag(category)
+                            }
+                        }
+                        ExpiryOptionalEditor(
+                            tracksExpiry: $item.tracksExpiry,
+                            expiryDate: Binding(
+                                get: { item.expiryDate ?? .daysFromNow(7) },
+                                set: { item.expiryDate = $0 }
+                            )
+                        )
                     }
-                    .padding(.vertical, 7)
+                    .padding(.vertical, ShelfSpacing.sm)
                 }
                 .onDelete { detections.remove(atOffsets: $0) }
             }
@@ -446,16 +475,25 @@ private struct ReceiptConfirmationList: View {
         VStack(alignment: .leading, spacing: ShelfSpacing.md) {
             Text("Extracted Items").font(.headline)
             ForEach($items) { $item in
-                HStack {
-                    TextField("Item", text: $item.name)
-                    Stepper("\(item.quantity.formatted())", value: $item.quantity, in: 0...20, step: 1)
-                        .labelsHidden()
+                VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                    HStack {
+                        TextField("Item", text: $item.name)
+                            .font(.subheadline.weight(.medium))
+                        Stepper("\(item.quantity.formatted())", value: $item.quantity, in: 0...20, step: 1)
+                            .labelsHidden()
+                    }
                     Picker("Category", selection: $item.category) {
                         ForEach(CategoryKind.allCases) { Text($0.rawValue).tag($0) }
                     }
-                    .labelsHidden()
+                    ExpiryOptionalEditor(
+                        tracksExpiry: $item.tracksExpiry,
+                        expiryDate: Binding(
+                            get: { item.expiryDate ?? .daysFromNow(7) },
+                            set: { item.expiryDate = $0 }
+                        )
+                    )
                 }
-                .font(.subheadline)
+                .padding(.vertical, ShelfSpacing.sm)
             }
             Button("Add \(items.count) Items") { addAll(items) }
                 .buttonStyle(.borderedProminent)
@@ -463,5 +501,42 @@ private struct ReceiptConfirmationList: View {
                 .frame(maxWidth: .infinity)
         }
         .shelfSurface(radius: 18)
+    }
+}
+
+private struct ExpiryConfirmationEditor: View {
+    @Binding var tracksExpiry: Bool
+    @Binding var expiryDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+            Toggle("Track expiry", isOn: $tracksExpiry)
+                .font(.subheadline.weight(.semibold))
+            if tracksExpiry {
+                DatePicker("Expiry date", selection: $expiryDate, displayedComponents: .date)
+                    .datePickerStyle(.compact)
+            }
+        }
+        .padding(ShelfSpacing.md)
+        .background(Color.shelfCanvas, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private struct ExpiryOptionalEditor: View {
+    @Binding var tracksExpiry: Bool
+    @Binding var expiryDate: Date
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ShelfSpacing.xs) {
+            Toggle("Track expiry", isOn: $tracksExpiry)
+                .font(.caption.weight(.semibold))
+            if tracksExpiry {
+                DatePicker("Expiry", selection: $expiryDate, displayedComponents: .date)
+                    .font(.caption)
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+            }
+        }
+        .padding(.leading, 48)
     }
 }

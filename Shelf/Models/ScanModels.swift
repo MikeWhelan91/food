@@ -28,6 +28,7 @@ struct DetectedInventoryItem: Identifiable, Hashable {
     var quantity: Double
     var category: CategoryKind
     var expiryDate: Date?
+    var tracksExpiry: Bool = true
     var confidence: Double
     var imageSystemName: String
 }
@@ -37,6 +38,8 @@ struct ReceiptLineItem: Identifiable, Hashable {
     var name: String
     var quantity: Double
     var category: CategoryKind
+    var expiryDate: Date? = .daysFromNow(7)
+    var tracksExpiry: Bool = true
     var confidence: Double
 }
 
