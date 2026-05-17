@@ -3,4 +3,6 @@ DerivedData/
 build/
 *.xcuserstate
 xcuserdata/
+.vercel/
 Shelf/Resources/OpenAISecrets.plist
+Shelf/Resources/ShelfBackend.plist

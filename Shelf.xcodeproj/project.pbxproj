@@ -14,20 +14,22 @@
 		1B21CDC5AE43E34BDBC4A210 /* OpenAIConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA092B5E8811C9D0065A5E3 /* OpenAIConfiguration.swift */; };
 		2072AD28167EA5F3147884AD /* MockData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A4BBC34D2505B56B7FEBCF /* MockData.swift */; };
 		392FFEEFC0969BBD3FDD18D9 /* OpenAIInventoryServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DE8D3F33EC88798AAE64A7 /* OpenAIInventoryServices.swift */; };
-		43E53766BC074E23F0C91B4C /* OpenAISecrets.example.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1E62D1D78F755F4C101B68D /* OpenAISecrets.example.plist */; };
 		531FBABCEDCF06B6F191BA05 /* AppDependencies.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA17C6207549673EEFC20D7 /* AppDependencies.swift */; };
 		5CE86A69309DAF69BB284909 /* ServiceProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE7A3B20252E7B0F8599AF2 /* ServiceProtocols.swift */; };
 		5F48586CC282F96E35D33BF8 /* MockServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = BADE74EA9C4B7AA69424F3F7 /* MockServices.swift */; };
 		68C765DBF766686E5ABCA11F /* ShelfApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC0F3EF4AA520208118B4CBB /* ShelfApp.swift */; };
 		6D84EA2FE10D6BA3FBE8C527 /* ScanHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB92AB63B5E9B67263D81F8 /* ScanHubView.swift */; };
 		8136377972B64897B2BEB25A /* ExpiryUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = C605A0795A0BAF6189249B37 /* ExpiryUtilities.swift */; };
+		98C1F3ACF2895BDF7C3A97FB /* ShelfBackendAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861F9695D252A79523AD2BD5 /* ShelfBackendAIService.swift */; };
 		99E341C7205E16FE8ED1A448 /* OpenFoodFactsProductLookupService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AA0857E4E37A919228617E8 /* OpenFoodFactsProductLookupService.swift */; };
 		9A8484B56F0C74219D1CE011 /* OnboardingFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22D4EA31691678C84569B544 /* OnboardingFlow.swift */; };
 		9AAE0C4443C6B726CFACDA91 /* ShoppingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FCA8FA2F30F744C79EF9659 /* ShoppingView.swift */; };
 		9E6C148EA51046560086AB10 /* FormComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43116E4D14C5BAD08E0F351B /* FormComponents.swift */; };
+		A3815CB4088D44E05D870872 /* ShelfBackendAIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65DF28A6161D10E1912B5159 /* ShelfBackendAIClient.swift */; };
 		A8000560A7BD2795AFCFE4CD /* OpenAIResponsesClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2F6FC1353D570F37245EE5 /* OpenAIResponsesClient.swift */; };
 		C0119F722500E139839497EF /* ScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CE54260579505AC044413E /* ScanModels.swift */; };
 		D18553532AF1EAB8DAEBF776 /* InventoryComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9FCD2B53C1991698BCC9DAE /* InventoryComponents.swift */; };
+		DF43CCB00E61FD75DB8F0A81 /* ShelfBackendConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359E64795CB86B9FCD2793A2 /* ShelfBackendConfiguration.swift */; };
 		E607DF73B37BF4F0007C06D7 /* ItemEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702FD810B224AE044B38EA2F /* ItemEditView.swift */; };
 		E6890BBC78C3D539DDE1DA3C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BB7C1C13FE1F70C8FEA57FE /* SettingsView.swift */; };
 		E73D020CB370179590A99AC1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F349B968E3DCF64629BE4D81 /* HomeView.swift */; };
@@ -42,8 +44,10 @@
 		1F8C1B1FC0C4A6F5937A54E0 /* ItemDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemDetailView.swift; sourceTree = "<group>"; };
 		22D4EA31691678C84569B544 /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
 		2A82C8962BA7B68B90AFC5BA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		359E64795CB86B9FCD2793A2 /* ShelfBackendConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfBackendConfiguration.swift; sourceTree = "<group>"; };
 		43116E4D14C5BAD08E0F351B /* FormComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormComponents.swift; sourceTree = "<group>"; };
 		6045EF9F8DB7F057F5DEE23C /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		65DF28A6161D10E1912B5159 /* ShelfBackendAIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfBackendAIClient.swift; sourceTree = "<group>"; };
 		702FD810B224AE044B38EA2F /* ItemEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemEditView.swift; sourceTree = "<group>"; };
 		78344985BB9D842FEB201567 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		7AB92AB63B5E9B67263D81F8 /* ScanHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanHubView.swift; sourceTree = "<group>"; };
@@ -51,11 +55,11 @@
 		7BB7C1C13FE1F70C8FEA57FE /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7BE7A3B20252E7B0F8599AF2 /* ServiceProtocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceProtocols.swift; sourceTree = "<group>"; };
 		7FCA8FA2F30F744C79EF9659 /* ShoppingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingView.swift; sourceTree = "<group>"; };
+		861F9695D252A79523AD2BD5 /* ShelfBackendAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfBackendAIService.swift; sourceTree = "<group>"; };
 		8BA17C6207549673EEFC20D7 /* AppDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
 		A538D8F2E01223563AC5829A /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
 		A8CE54260579505AC044413E /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		B0A4BBC34D2505B56B7FEBCF /* MockData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockData.swift; sourceTree = "<group>"; };
-		B1E62D1D78F755F4C101B68D /* OpenAISecrets.example.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = OpenAISecrets.example.plist; sourceTree = "<group>"; };
 		BADE74EA9C4B7AA69424F3F7 /* MockServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockServices.swift; sourceTree = "<group>"; };
 		BC0F3EF4AA520208118B4CBB /* ShelfApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfApp.swift; sourceTree = "<group>"; };
 		C434CA69BBA8550DF6E411AC /* Shelf.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Shelf.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -118,7 +122,6 @@
 			children = (
 				C82670C21FF57E71DADA6CEA /* Assets.xcassets */,
 				2A82C8962BA7B68B90AFC5BA /* Info.plist */,
-				B1E62D1D78F755F4C101B68D /* OpenAISecrets.example.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -151,6 +154,9 @@
 				0E2F6FC1353D570F37245EE5 /* OpenAIResponsesClient.swift */,
 				1AA0857E4E37A919228617E8 /* OpenFoodFactsProductLookupService.swift */,
 				7BE7A3B20252E7B0F8599AF2 /* ServiceProtocols.swift */,
+				65DF28A6161D10E1912B5159 /* ShelfBackendAIClient.swift */,
+				861F9695D252A79523AD2BD5 /* ShelfBackendAIService.swift */,
+				359E64795CB86B9FCD2793A2 /* ShelfBackendConfiguration.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -282,7 +288,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F858906AF6ACAEF4F30C86FA /* Assets.xcassets in Resources */,
-				43E53766BC074E23F0C91B4C /* OpenAISecrets.example.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,6 +321,9 @@
 				5CE86A69309DAF69BB284909 /* ServiceProtocols.swift in Sources */,
 				E6890BBC78C3D539DDE1DA3C /* SettingsView.swift in Sources */,
 				68C765DBF766686E5ABCA11F /* ShelfApp.swift in Sources */,
+				A3815CB4088D44E05D870872 /* ShelfBackendAIClient.swift in Sources */,
+				98C1F3ACF2895BDF7C3A97FB /* ShelfBackendAIService.swift in Sources */,
+				DF43CCB00E61FD75DB8F0A81 /* ShelfBackendConfiguration.swift in Sources */,
 				9AAE0C4443C6B726CFACDA91 /* ShoppingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -18,10 +18,13 @@ targets:
       - path: Shelf
         excludes:
           - "ChatGPT Image May 17, 2026, 06_08_53 PM.png"
+          - "Resources/OpenAISecrets.example.plist"
+          - "Resources/ShelfBackend.example.plist"
     resources:
       - path: Shelf/Resources
         excludes:
           - "OpenAISecrets.example.plist"
+          - "ShelfBackend.example.plist"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.shelf.inventory

@@ -31,9 +31,9 @@ final class AppDependencies {
 
     static let live = AppDependencies(
         productLookup: OpenFoodFactsProductLookupService(),
-        smartScan: OpenAISmartScanService(),
-        receiptOCR: OpenAIReceiptOCRService(),
-        expiryOCR: OpenAIExpiryOCRService(),
+        smartScan: ShelfBackendSmartScanService(),
+        receiptOCR: ShelfBackendReceiptOCRService(),
+        expiryOCR: ShelfBackendExpiryOCRService(),
         suggestions: MockProductSuggestionService(),
         notifications: UserNotificationManager(),
         haptics: SystemHapticManager()
