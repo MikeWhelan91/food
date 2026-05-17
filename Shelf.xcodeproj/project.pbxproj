@@ -36,6 +36,7 @@
 		E71267E4CC795E3A8AE884C9 /* ImageCaptureComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9DEC16BB210ED4CD9B9C1C6 /* ImageCaptureComponents.swift */; };
 		E73D020CB370179590A99AC1 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F349B968E3DCF64629BE4D81 /* HomeView.swift */; };
 		F858906AF6ACAEF4F30C86FA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C82670C21FF57E71DADA6CEA /* Assets.xcassets */; };
+		FB559BCCA66D91B7FF962181 /* ShelfBackend.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8D45B668A594A76823161C7B /* ShelfBackend.plist */; };
 		FF4DE487FEFB5B123CC08937 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78344985BB9D842FEB201567 /* DesignSystem.swift */; };
 /* End PBXBuildFile section */
 
@@ -60,6 +61,7 @@
 		7FCA8FA2F30F744C79EF9659 /* ShoppingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShoppingView.swift; sourceTree = "<group>"; };
 		861F9695D252A79523AD2BD5 /* ShelfBackendAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfBackendAIService.swift; sourceTree = "<group>"; };
 		8BA17C6207549673EEFC20D7 /* AppDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDependencies.swift; sourceTree = "<group>"; };
+		8D45B668A594A76823161C7B /* ShelfBackend.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = ShelfBackend.plist; sourceTree = "<group>"; };
 		A538D8F2E01223563AC5829A /* InventoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryView.swift; sourceTree = "<group>"; };
 		A8CE54260579505AC044413E /* ScanModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModels.swift; sourceTree = "<group>"; };
 		A9DEC16BB210ED4CD9B9C1C6 /* ImageCaptureComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCaptureComponents.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 			children = (
 				C82670C21FF57E71DADA6CEA /* Assets.xcassets */,
 				2A82C8962BA7B68B90AFC5BA /* Info.plist */,
+				8D45B668A594A76823161C7B /* ShelfBackend.plist */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -264,7 +267,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					EC4C211976F788C55AFB7619 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 5976U4WSJN;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -294,6 +297,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F858906AF6ACAEF4F30C86FA /* Assets.xcassets in Resources */,
+				FB559BCCA66D91B7FF962181 /* ShelfBackend.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -375,7 +379,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5976U4WSJN;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -441,7 +445,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 5976U4WSJN;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -477,7 +481,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.shelf.inventory;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikewhelan.shelf;
 				PRODUCT_NAME = Shelf;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -497,7 +501,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.shelf.inventory;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mikewhelan.shelf;
 				PRODUCT_NAME = Shelf;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

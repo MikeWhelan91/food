@@ -8,7 +8,7 @@ settings:
     MARKETING_VERSION: 1.0
     CURRENT_PROJECT_VERSION: 1
     SWIFT_VERSION: 5.10
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: "5976U4WSJN"
 targets:
   Shelf:
     type: application
@@ -27,7 +27,7 @@ targets:
           - "ShelfBackend.example.plist"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.shelf.inventory
+        PRODUCT_BUNDLE_IDENTIFIER: com.mikewhelan.shelf
         PRODUCT_NAME: Shelf
         INFOPLIST_FILE: Shelf/Resources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
