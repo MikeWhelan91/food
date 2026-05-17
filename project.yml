@@ -1,0 +1,34 @@
+name: Shelf
+options:
+  minimumXcodeGenVersion: 2.42.0
+  deploymentTarget:
+    iOS: "18.0"
+settings:
+  base:
+    MARKETING_VERSION: 1.0
+    CURRENT_PROJECT_VERSION: 1
+    SWIFT_VERSION: 5.10
+    DEVELOPMENT_TEAM: ""
+targets:
+  Shelf:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Shelf
+        excludes:
+          - "ChatGPT Image May 17, 2026, 06_08_53 PM.png"
+    resources:
+      - path: Shelf/Resources
+        excludes:
+          - "OpenAISecrets.example.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.shelf.inventory
+        PRODUCT_NAME: Shelf
+        INFOPLIST_FILE: Shelf/Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+    scheme:
+      testTargets: []
