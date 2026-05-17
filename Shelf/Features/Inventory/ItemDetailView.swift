@@ -102,7 +102,7 @@ struct ItemDetailView: View {
     }
 
     private func duplicate() {
-        modelContext.insert(InventoryItem(productName: item.productName, brand: item.brand, quantity: item.quantity, unit: item.unit, category: item.category, locationName: item.locationName, purchaseDate: .now, imageSystemName: item.imageSystemName, expiry: ExpiryInfo(date: item.expiry?.date, label: item.expiry?.label ?? "Best Before", confidence: item.expiry?.confidence ?? 0.7, source: "Duplicate"), events: [InventoryEvent(kind: .duplicated, message: "Duplicated from \(item.productName)")]))
+        modelContext.insert(InventoryItem(productName: item.productName, brand: item.brand, quantity: item.quantity, unit: item.unit, category: item.category, locationName: item.locationName, purchaseDate: .now, imageSystemName: item.imageSystemName, imageURLString: item.imageURLString, expiry: ExpiryInfo(date: item.expiry?.date, label: item.expiry?.label ?? "Best Before", confidence: item.expiry?.confidence ?? 0.7, source: "Duplicate"), events: [InventoryEvent(kind: .duplicated, message: "Duplicated from \(item.productName)")]))
     }
 
     private func delete() {
@@ -116,7 +116,7 @@ private struct ItemHero: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: ShelfSpacing.lg) {
-            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 86)
+            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 86, imageURLString: item.imageURLString)
             VStack(alignment: .leading, spacing: ShelfSpacing.xs) {
                 Text(item.productName)
                     .font(.title2.weight(.bold))

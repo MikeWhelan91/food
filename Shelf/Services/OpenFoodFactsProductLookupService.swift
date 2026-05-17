@@ -107,13 +107,13 @@ struct OpenFoodFactsProductLookupService: ProductLookupServicing {
     private static func symbol(for tags: [String]) -> String {
         let joinedTags = tags.joined(separator: " ")
         if joinedTags.contains("beverages") || joinedTags.contains("drinks") {
-            return "bottle"
+            return "waterbottle"
         }
         if joinedTags.contains("dair") || joinedTags.contains("milk") {
-            return "carton"
+            return "takeoutbag.and.cup.and.straw"
         }
         if joinedTags.contains("eggs") {
-            return "oval.grid.3x3"
+            return "circle.grid.3x3"
         }
         if joinedTags.contains("fruits") || joinedTags.contains("vegetables") {
             return "leaf"

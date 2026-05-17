@@ -2,138 +2,214 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     @Environment(AppDependencies.self) private var dependencies
+    @AppStorage("userName") private var storedName = ""
     let complete: () -> Void
+
+    @State private var name = ""
     @State private var page = 0
-    @State private var notificationStatus = "Not enabled"
 
     var body: some View {
-        TabView(selection: $page) {
-            OnboardingPage(title: "Know what's in your home.", message: "Track expiry dates, reduce waste, and shop smarter.", symbol: "shippingbox", primaryTitle: "Get Started", secondaryTitle: "Skip", primary: next, secondary: complete)
-                .tag(0)
-            OnboardingFeaturesPage(primary: next, secondary: complete)
-                .tag(1)
-            OnboardingPage(title: "Stay ahead of expiries", message: "Shelf can remind you before items expire so you can use them in time.", symbol: "bell.badge", primaryTitle: "Enable Notifications", secondaryTitle: "Skip", primary: requestNotifications, secondary: next)
+        VStack(spacing: 0) {
+            TabView(selection: $page) {
+                NameSetupPage(name: $name, continueAction: next)
+                    .tag(0)
+                CapabilitySetupPage(continueAction: next)
+                    .tag(1)
+                NotificationSetupPage(
+                    enable: requestNotifications,
+                    skip: finish
+                )
                 .tag(2)
-            OnboardingPage(title: "Secure and private", message: "Your data stays in your control. Sign in only syncs across your devices.", symbol: "lock.shield", primaryTitle: "Sign in with Apple", secondaryTitle: "Continue without account", primary: complete, secondary: complete)
-                .tag(3)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
         }
-        .tabViewStyle(.page(indexDisplayMode: .always))
-        .background(Color(.systemGroupedBackground))
+        .background(Color.shelfCanvas.ignoresSafeArea())
+        .onAppear {
+            name = storedName
+        }
     }
 
     private func next() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
-            page = min(page + 1, 3)
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.9)) {
+            page = min(page + 1, 2)
         }
+    }
+
+    private func finish() {
+        storedName = cleanedName
+        complete()
     }
 
     private func requestNotifications() {
         Task {
-            let granted = await dependencies.notifications.requestAuthorization()
-            notificationStatus = granted ? "Enabled" : "Not enabled"
-            next()
+            _ = await dependencies.notifications.requestAuthorization()
+            await MainActor.run {
+                finish()
+            }
         }
+    }
+
+    private var cleanedName: String {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? "there" : trimmed
     }
 }
 
-private struct OnboardingPage: View {
-    let title: String
-    let message: String
-    let symbol: String
-    let primaryTitle: String
-    let secondaryTitle: String
-    let primary: () -> Void
-    let secondary: () -> Void
-
-    var body: some View {
-        VStack(spacing: ShelfSpacing.xl) {
-            Spacer(minLength: ShelfSpacing.lg)
-            Image(systemName: symbol)
-                .font(.system(size: 52, weight: .regular))
-                .foregroundStyle(Color.shelfGreen)
-                .frame(width: 96, height: 96)
-                .background(Color.shelfGreen.opacity(0.1), in: RoundedRectangle(cornerRadius: 26, style: .continuous))
-            VStack(spacing: ShelfSpacing.sm) {
-                Text(title)
-                    .font(.largeTitle.weight(.bold))
-                    .multilineTextAlignment(.center)
-                    .lineLimit(nil)
-                Text(message)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.horizontal, ShelfSpacing.xl)
-            Spacer()
-            VStack(spacing: ShelfSpacing.sm) {
-                Button(primaryTitle, action: primary)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                Button(secondaryTitle, action: secondary)
-                    .buttonStyle(.plain)
-                    .font(.subheadline.weight(.medium))
-            }
-            .padding(.horizontal, ShelfSpacing.xl)
-            .padding(.bottom, ShelfSpacing.xl)
-        }
-        .tint(.shelfGreen)
-    }
-}
-
-private struct OnboardingFeaturesPage: View {
-    let primary: () -> Void
-    let secondary: () -> Void
+private struct NameSetupPage: View {
+    @Binding var name: String
+    let continueAction: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: ShelfSpacing.xl) {
-            Spacer(minLength: ShelfSpacing.lg)
-            VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
-                Text("Everything in one place")
-                    .font(.largeTitle.weight(.bold))
+            Spacer(minLength: 48)
+
+            VStack(alignment: .leading, spacing: ShelfSpacing.md) {
+                Text("Shelf")
+                    .font(.system(.title, design: .rounded, weight: .semibold))
+                    .foregroundStyle(Color.shelfGreen)
+                Text("Know what's in your home.")
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
                     .lineLimit(nil)
-                Text("Add items quickly and keep the household inventory current.")
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Start with your name. Shelf uses it only to make the app feel personal.")
                     .font(.body)
                     .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            VStack(spacing: ShelfSpacing.lg) {
-                FeatureRow(symbol: "barcode.viewfinder", title: "Scan barcodes", message: "Add items in seconds")
-                FeatureRow(symbol: "camera.viewfinder", title: "Smart scan", message: "Detect items in your fridge or pantry")
-                FeatureRow(symbol: "bell.badge", title: "Expiry alerts", message: "Never miss an expiry date")
+
+            VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                Text("Your name")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                TextField("Mike", text: $name)
+                    .textInputAutocapitalization(.words)
+                    .submitLabel(.next)
+                    .font(.title3.weight(.semibold))
+                    .padding(.horizontal, ShelfSpacing.md)
+                    .frame(minHeight: 54)
+                    .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                    }
+                    .onSubmit(continueAction)
             }
+
             Spacer()
-            VStack(spacing: ShelfSpacing.sm) {
-                Button("Next", action: primary)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                Button("Skip", action: secondary)
-                    .buttonStyle(.plain)
-                    .font(.subheadline.weight(.medium))
-            }
+
+            Button("Continue", action: continueAction)
+                .buttonStyle(ShelfPrimaryButtonStyle())
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
-        .padding(.horizontal, ShelfSpacing.xl)
-        .padding(.bottom, ShelfSpacing.xl)
-        .tint(.shelfGreen)
+        .padding(.horizontal, 28)
+        .padding(.bottom, 54)
     }
 }
 
-private struct FeatureRow: View {
-    let symbol: String
-    let title: String
-    let message: String
+private struct CapabilitySetupPage: View {
+    let continueAction: () -> Void
 
     var body: some View {
-        HStack(spacing: ShelfSpacing.md) {
-            Image(systemName: symbol)
-                .font(.title3)
+        VStack(alignment: .leading, spacing: ShelfSpacing.xl) {
+            Spacer(minLength: 54)
+
+            VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                Text("Add items quickly")
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("Barcode, shelf photos, receipts, and manual entry all lead to the same clean inventory.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            VStack(spacing: ShelfSpacing.md) {
+                SetupRow(symbol: "barcode.viewfinder", title: "Barcode scan", detail: "Product lookup with images when available")
+                SetupRow(symbol: "camera.viewfinder", title: "Smart scan", detail: "Review detected items before adding")
+                SetupRow(symbol: "calendar.badge.clock", title: "Expiry tracking", detail: "Keep soon and urgent items visible")
+            }
+
+            Spacer()
+
+            Button("Continue", action: continueAction)
+                .buttonStyle(ShelfPrimaryButtonStyle())
+        }
+        .padding(.horizontal, 28)
+        .padding(.bottom, 54)
+    }
+}
+
+private struct NotificationSetupPage: View {
+    let enable: () -> Void
+    let skip: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: ShelfSpacing.xl) {
+            Spacer(minLength: 54)
+
+            Image(systemName: "bell.badge")
+                .font(.system(size: 42, weight: .regular))
                 .foregroundStyle(Color.shelfGreen)
-                .frame(width: 34)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.headline)
-                Text(message).font(.subheadline).foregroundStyle(.secondary)
+                .frame(width: 74, height: 74)
+                .background(Color.shelfGreen.opacity(0.1), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+
+            VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                Text("Expiry reminders")
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                Text("Shelf can remind you before food expires. You can change this later in Settings.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            VStack(spacing: ShelfSpacing.sm) {
+                Button("Enable Notifications", action: enable)
+                    .buttonStyle(ShelfPrimaryButtonStyle())
+                Button("Not Now", action: skip)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Color.shelfGreen)
+                    .frame(maxWidth: .infinity, minHeight: 48)
             }
         }
+        .padding(.horizontal, 28)
+        .padding(.bottom, 54)
+    }
+}
+
+private struct SetupRow: View {
+    let symbol: String
+    let title: String
+    let detail: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: ShelfSpacing.md) {
+            Image(systemName: symbol)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Color.shelfGreen)
+                .frame(width: 38, height: 38)
+                .background(Color.shelfGreen.opacity(0.1), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.headline)
+                Text(detail)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+struct ShelfPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.body.weight(.semibold))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Color.shelfGreen.opacity(configuration.isPressed ? 0.82 : 1), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }

@@ -13,7 +13,7 @@ struct OpenAISmartScanService: SmartScanServicing {
             let json = try await client.generateJSON(prompt: """
             Create a realistic fridge or pantry smart scan result for \(max(1, images.count)) captured image(s).
             Return JSON with this exact shape:
-            {"items":[{"name":"Milk","brand":"Avonmore","quantity":1,"category":"Fridge","expiryDaysFromNow":3,"confidence":0.91,"imageSystemName":"carton"}]}
+            {"items":[{"name":"Milk","brand":"Avonmore","quantity":1,"category":"Fridge","expiryDaysFromNow":3,"confidence":0.91,"imageSystemName":"takeoutbag.and.cup.and.straw"}]}
             Use 3 to 6 common household grocery items. Categories must be one of Fridge, Freezer, Pantry, Bathroom, Cleaning, Pet.
             """)
             let decoded = try JSONDecoder().decode(OpenAISmartScanResponse.self, from: Data(json.utf8))

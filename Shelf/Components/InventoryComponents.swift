@@ -21,18 +21,39 @@ struct ProductThumbnail: View {
     let systemName: String
     let category: CategoryKind
     var size: CGFloat = 44
+    var imageURLString: String?
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(categoryColor.opacity(0.14))
-            Image(systemName: systemName)
-                .font(.system(size: size * 0.42, weight: .medium))
-                .foregroundStyle(categoryColor)
-                .imageScale(.medium)
+            if let imageURLString, let url = URL(string: imageURLString) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case let .success(image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure, .empty:
+                        fallbackIcon
+                    @unknown default:
+                        fallbackIcon
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else {
+                fallbackIcon
+            }
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
+    }
+
+    private var fallbackIcon: some View {
+        Image(systemName: systemName)
+            .font(.system(size: size * 0.42, weight: .medium))
+            .foregroundStyle(categoryColor)
+            .imageScale(.medium)
     }
 
     private var categoryColor: Color {
@@ -53,7 +74,7 @@ struct InventoryItemRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: ShelfSpacing.md) {
-            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: compact ? 40 : 48)
+            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: compact ? 40 : 48, imageURLString: item.imageURLString)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(item.productName)

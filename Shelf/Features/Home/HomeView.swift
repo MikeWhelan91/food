@@ -127,7 +127,7 @@ private struct FeaturedExpiryItem: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: ShelfSpacing.md) {
-            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 64)
+            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 64, imageURLString: item.imageURLString)
             VStack(alignment: .leading, spacing: ShelfSpacing.xs) {
                 Text(item.productName)
                     .font(.title3.weight(.semibold))

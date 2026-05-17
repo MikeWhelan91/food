@@ -50,6 +50,7 @@ final class Product {
     var brand: String
     var normalizedName: String
     var imageSystemName: String
+    var imageURLString: String?
     var defaultCategory: CategoryKind
     var typicalShelfLifeDays: Int
     var createdAt: Date
@@ -59,6 +60,7 @@ final class Product {
         name: String,
         brand: String = "",
         imageSystemName: String = "takeoutbag.and.cup.and.straw",
+        imageURLString: String? = nil,
         defaultCategory: CategoryKind = .pantry,
         typicalShelfLifeDays: Int = 7,
         createdAt: Date = .now
@@ -68,6 +70,7 @@ final class Product {
         self.brand = brand
         self.normalizedName = name.lowercased()
         self.imageSystemName = imageSystemName
+        self.imageURLString = imageURLString
         self.defaultCategory = defaultCategory
         self.typicalShelfLifeDays = typicalShelfLifeDays
         self.createdAt = createdAt
@@ -120,6 +123,7 @@ final class InventoryItem {
     var estimatedDepletionDate: Date?
     var notes: String
     var imageSystemName: String
+    var imageURLString: String?
     var createdAt: Date
     var updatedAt: Date
     @Relationship(deleteRule: .cascade) var expiry: ExpiryInfo?
@@ -138,6 +142,7 @@ final class InventoryItem {
         estimatedDepletionDate: Date? = nil,
         notes: String = "",
         imageSystemName: String = "takeoutbag.and.cup.and.straw",
+        imageURLString: String? = nil,
         expiry: ExpiryInfo? = nil,
         events: [InventoryEvent] = [],
         createdAt: Date = .now,
@@ -155,6 +160,7 @@ final class InventoryItem {
         self.estimatedDepletionDate = estimatedDepletionDate
         self.notes = notes
         self.imageSystemName = imageSystemName
+        self.imageURLString = imageURLString
         self.expiry = expiry
         self.events = events
         self.createdAt = createdAt

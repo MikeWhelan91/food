@@ -3,8 +3,6 @@ import SwiftUI
 
 struct RootView: View {
     @Binding var hasCompletedOnboarding: Bool
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [InventoryItem]
     @State private var selectedTab: AppTab = .home
 
     var body: some View {
@@ -13,21 +11,10 @@ struct RootView: View {
                 AppTabView(selectedTab: $selectedTab)
             } else {
                 OnboardingFlow {
-                    seedIfNeeded()
                     hasCompletedOnboarding = true
                 }
             }
         }
-        .task {
-            if hasCompletedOnboarding {
-                seedIfNeeded()
-            }
-        }
-    }
-
-    private func seedIfNeeded() {
-        guard items.isEmpty else { return }
-        MockData.seed(in: modelContext)
     }
 }
 
@@ -74,7 +61,7 @@ struct AppTabView: View {
                 .tabItem { Label(AppTab.inventory.title, systemImage: AppTab.inventory.symbol) }
                 .tag(AppTab.inventory)
 
-            ScanHubView()
+            ScanHubView(selectedTab: $selectedTab)
                 .tabItem { Label(AppTab.scan.title, systemImage: AppTab.scan.symbol) }
                 .tag(AppTab.scan)
 

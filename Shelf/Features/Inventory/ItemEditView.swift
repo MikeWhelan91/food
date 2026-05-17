@@ -10,6 +10,7 @@ struct ItemEditView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     let mode: ItemEditMode
+    var onSave: (() -> Void)? = nil
 
     @State private var name = ""
     @State private var brand = ""
@@ -23,38 +24,62 @@ struct ItemEditView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Product") {
-                    TextField("Name", text: $name)
-                    TextField("Brand", text: $brand)
-                    Picker("Category", selection: $category) {
-                        ForEach(CategoryKind.allCases) { category in
-                            Label(category.rawValue, systemImage: category.symbol).tag(category)
+            ScrollView {
+                VStack(alignment: .leading, spacing: ShelfSpacing.lg) {
+                    VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                        Text("Product")
+                            .font(.headline)
+                        TextField("Name", text: $name)
+                            .textInputAutocapitalization(.words)
+                        TextField("Brand", text: $brand)
+                            .textInputAutocapitalization(.words)
+                        Picker("Category", selection: $category) {
+                            ForEach(CategoryKind.allCases) { category in
+                                Label(category.rawValue, systemImage: category.symbol).tag(category)
+                            }
+                        }
+                        TextField("Location", text: $location)
+                            .textInputAutocapitalization(.words)
+                    }
+                    .textFieldStyle(.roundedBorder)
+                    .shelfSurface(radius: 16)
+
+                    VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                        Text("Quantity")
+                            .font(.headline)
+                        Stepper(value: $quantity, in: 0...99, step: 1) {
+                            Text("\(quantity.formatted()) \(unit.rawValue)")
+                        }
+                        Picker("Unit", selection: $unit) {
+                            ForEach(InventoryUnit.allCases, id: \.self) { unit in
+                                Text(unit.rawValue.capitalized).tag(unit)
+                            }
                         }
                     }
-                    TextField("Location", text: $location)
-                }
-                Section("Quantity") {
-                    Stepper(value: $quantity, in: 0...99, step: 1) {
-                        Text("\(quantity.formatted()) \(unit.rawValue)")
-                    }
-                    Picker("Unit", selection: $unit) {
-                        ForEach(InventoryUnit.allCases, id: \.self) { unit in
-                            Text(unit.rawValue.capitalized).tag(unit)
+                    .shelfSurface(radius: 16)
+
+                    VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                        Text("Expiry")
+                            .font(.headline)
+                        Toggle("Track expiry", isOn: $hasExpiry)
+                        if hasExpiry {
+                            DatePicker("Expiry date", selection: $expiryDate, displayedComponents: .date)
                         }
                     }
-                }
-                Section("Expiry") {
-                    Toggle("Track expiry", isOn: $hasExpiry)
-                    if hasExpiry {
-                        DatePicker("Expiry date", selection: $expiryDate, displayedComponents: .date)
+                    .shelfSurface(radius: 16)
+
+                    VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
+                        Text("Notes")
+                            .font(.headline)
+                        TextField("Storage notes", text: $notes, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                            .lineLimit(3...6)
                     }
+                    .shelfSurface(radius: 16)
                 }
-                Section("Notes") {
-                    TextField("Storage notes", text: $notes, axis: .vertical)
-                        .lineLimit(3...6)
-                }
+                .padding()
             }
+            .background(Color.shelfCanvas)
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -129,6 +154,7 @@ struct ItemEditView: View {
             item.events.append(InventoryEvent(kind: .edited, message: "Edited item details"))
         }
         dismiss()
+        onSave?()
     }
 }
 

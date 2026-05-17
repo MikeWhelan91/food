@@ -5,7 +5,8 @@ extension Color {
     static let shelfAmber = Color(red: 0.76, green: 0.48, blue: 0.17)
     static let shelfRed = Color(red: 0.72, green: 0.19, blue: 0.16)
     static let shelfBlue = Color(red: 0.18, green: 0.36, blue: 0.57)
-    static let shelfGrouped = Color(.secondarySystemGroupedBackground)
+    static let shelfCanvas = Color(red: 0.96, green: 0.95, blue: 0.91)
+    static let shelfGrouped = Color(red: 0.99, green: 0.98, blue: 0.95)
 }
 
 enum ShelfSpacing {
@@ -22,7 +23,7 @@ struct ShelfSurface: ViewModifier {
     func body(content: Content) -> some View {
         content
             .padding(ShelfSpacing.md)
-            .background(.background, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
+            .background(Color.shelfGrouped, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
     }
 }
 

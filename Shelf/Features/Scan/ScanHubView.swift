@@ -12,8 +12,11 @@ enum ScanRoute: Hashable {
 }
 
 struct ScanHubView: View {
+    @Binding var selectedTab: AppTab
+    @State private var path: [ScanRoute] = []
+
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 Section {
                     NavigationLink(value: ScanRoute.barcode) {
@@ -36,10 +39,13 @@ struct ScanHubView: View {
             .navigationTitle("Scan")
             .navigationDestination(for: ScanRoute.self) { route in
                 switch route {
-                case .barcode: BarcodeScanFlow()
-                case .smart: SmartScanFlow()
-                case .receipt: ReceiptScanFlow()
-                case .manual: ItemEditView(mode: .add)
+                case .barcode: BarcodeScanFlow(selectedTab: $selectedTab, path: $path)
+                case .smart: SmartScanFlow(selectedTab: $selectedTab, path: $path)
+                case .receipt: ReceiptScanFlow(selectedTab: $selectedTab, path: $path)
+                case .manual: ItemEditView(mode: .add) {
+                    path.removeAll()
+                    selectedTab = .inventory
+                }
                 }
             }
         }
@@ -71,6 +77,8 @@ private struct ScanActionRow: View {
 struct BarcodeScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
+    @Binding var selectedTab: AppTab
+    @Binding var path: [ScanRoute]
     @State private var state: Loadable<ProductLookupResult> = .idle
     @State private var barcode = ""
     @State private var scannerError: String?
@@ -143,15 +151,19 @@ struct BarcodeScanFlow: View {
     }
 
     private func add(_ result: ProductLookupResult) {
-        let item = InventoryItem(productName: result.name, brand: result.brand, category: result.category, locationName: result.category.rawValue, imageSystemName: result.imageSystemName, expiry: ExpiryInfo(date: .daysFromNow(7), label: "Best Before", confidence: result.confidence, source: result.source), events: [InventoryEvent(kind: .added, message: "Added from barcode")])
+        let item = InventoryItem(productName: result.name, brand: result.brand, category: result.category, locationName: result.category.rawValue, imageSystemName: result.imageSystemName, imageURLString: result.imageURL?.absoluteString, expiry: ExpiryInfo(date: .daysFromNow(7), label: "Best Before", confidence: result.confidence, source: result.source), events: [InventoryEvent(kind: .added, message: "Added from barcode")])
         modelContext.insert(item)
         dependencies.haptics.success()
+        path.removeAll()
+        selectedTab = .inventory
     }
 }
 
 struct SmartScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
+    @Binding var selectedTab: AppTab
+    @Binding var path: [ScanRoute]
     @State private var capturedImages: [CapturedImage] = []
     @State private var detections: [DetectedInventoryItem] = []
     @State private var isProcessing = false
@@ -225,12 +237,16 @@ struct SmartScanFlow: View {
         }
         detections.removeAll()
         dependencies.haptics.success()
+        path.removeAll()
+        selectedTab = .inventory
     }
 }
 
 struct ReceiptScanFlow: View {
     @Environment(AppDependencies.self) private var dependencies
     @Environment(\.modelContext) private var modelContext
+    @Binding var selectedTab: AppTab
+    @Binding var path: [ScanRoute]
     @State private var state: Loadable<[ReceiptLineItem]> = .idle
     @State private var capturedImage: CapturedImage?
     @State private var showingCamera = false
@@ -307,6 +323,8 @@ struct ReceiptScanFlow: View {
         }
         dependencies.haptics.success()
         state = .idle
+        path.removeAll()
+        selectedTab = .inventory
     }
 }
 
@@ -370,7 +388,7 @@ private struct ProductConfirmationCard: View {
     var body: some View {
         VStack(spacing: ShelfSpacing.md) {
             HStack(spacing: ShelfSpacing.md) {
-                ProductThumbnail(systemName: result.imageSystemName, category: result.category, size: 58)
+                ProductThumbnail(systemName: result.imageSystemName, category: result.category, size: 58, imageURLString: result.imageURL?.absoluteString)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(result.name).font(.headline)
                     Text(result.brand.isEmpty ? result.source : result.brand)

@@ -7,6 +7,10 @@ struct ShelfApp: App {
     @State private var dependencies = AppDependencies.live
 
     var sharedModelContainer: ModelContainer = {
+        if let supportURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            try? FileManager.default.createDirectory(at: supportURL, withIntermediateDirectories: true)
+        }
+
         let schema = Schema([
             Product.self,
             InventoryItem.self,
@@ -33,6 +37,7 @@ struct ShelfApp: App {
             RootView(hasCompletedOnboarding: $hasCompletedOnboarding)
                 .environment(dependencies)
                 .modelContainer(sharedModelContainer)
+                .preferredColorScheme(.light)
         }
     }
 }

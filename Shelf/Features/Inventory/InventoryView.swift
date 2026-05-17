@@ -177,7 +177,7 @@ struct InventoryView: View {
     }
 
     private func duplicate(_ item: InventoryItem) {
-        modelContext.insert(InventoryItem(productName: item.productName, brand: item.brand, quantity: item.quantity, unit: item.unit, category: item.category, locationName: item.locationName, purchaseDate: .now, imageSystemName: item.imageSystemName, expiry: ExpiryInfo(date: item.expiry?.date, label: item.expiry?.label ?? "Best Before", confidence: item.expiry?.confidence ?? 0.8, source: "Duplicate")))
+        modelContext.insert(InventoryItem(productName: item.productName, brand: item.brand, quantity: item.quantity, unit: item.unit, category: item.category, locationName: item.locationName, purchaseDate: .now, imageSystemName: item.imageSystemName, imageURLString: item.imageURLString, expiry: ExpiryInfo(date: item.expiry?.date, label: item.expiry?.label ?? "Best Before", confidence: item.expiry?.confidence ?? 0.8, source: "Duplicate")))
     }
 
     private func clearFilters() {
@@ -210,7 +210,7 @@ private struct InventoryGridTile: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: ShelfSpacing.sm) {
-            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 54)
+            ProductThumbnail(systemName: item.imageSystemName, category: item.category, size: 54, imageURLString: item.imageURLString)
             Text(item.productName)
                 .font(.subheadline.weight(.semibold))
                 .lineLimit(nil)
